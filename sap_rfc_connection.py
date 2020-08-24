@@ -73,12 +73,12 @@ def get_rfc_parameters(dict_sap_con, func_name):
     return lst_res
 
 def check_input_format(df, lst_param):
-    '''Check if the dataframe that is going to be used to insert data to SAP has the same size, column names and data types, if not stop code execution
+    '''Check if the data frame that is going to be used to insert data to SAP has the same size, column names and data types, if not stop code execution
     
     Parameters
     ----------
     df : pandas.DataFrame
-        dataframe that is going to be used to insert data to SAP
+        data frame that is going to be used to insert data to SAP
     lst_param : list
         list of dictionaries with field names and data types used in RFC
         
@@ -86,13 +86,13 @@ def check_input_format(df, lst_param):
     -------
     None
     '''
-    print(f'{time.ctime()}, Start dataframe format check')
+    print(f'{time.ctime()}, Start data frame format check')
     # create the error indicator as false
     err_ind = False
-    # check if the dataframe has the same columns quantity as the RFC needs
+    # check if the data frame has the same columns quantity as the RFC needs
     if len(df.columns) == len(lst_param):
-        print(f'{time.ctime()}, The dataframe has the same column quantity as desired by RFC specification')
-        # for each column in the dataframe
+        print(f'{time.ctime()}, The data frame has the same column quantity as desired by RFC specification')
+        # for each column in the data frame
         for col in df.columns:
             # get the data type of the column
             df_col_typ = str(df[col].dtype)
@@ -100,7 +100,7 @@ def check_input_format(df, lst_param):
             rfc_col_dict = next(item for item in lst_param if item["name"] == col)
             # get the value from this dict key 
             rfc_col_typ = rfc_col_dict.get('field_type')
-            # check if the data types of RFC and dataframe is the same
+            # check if the data types of RFC and data frame is the same
             # string check
             if (rfc_col_typ == 'RFCTYPE_CHAR') and (df_col_typ != 'object'):
                 err_ind = True
@@ -117,35 +117,35 @@ def check_input_format(df, lst_param):
             else:
                 # everything is ok
                 print(f'{time.ctime()}, {col} format validated')
-        print(f'{time.ctime()}, Dataframe format validated')
+        print(f'{time.ctime()}, data frame format validated')
     else:
-        # if the dataframe and RFC aren't the same size means that we are trying to send 
+        # if the data frame and RFC aren't the same size means that we are trying to send 
         # or more data than needed or less, so tell which case it is
         if len(df.columns) > len(lst_param):
-            print(f'{time.ctime()}, There are more columns in dataframe than needed')
+            print(f'{time.ctime()}, There are more columns in data frame than needed')
         else:
-            print(f'{time.ctime()}, There are less columns in dataframe than needed')
+            print(f'{time.ctime()}, There are less columns in data frame than needed')
         # print the needed columns
         print(f'{time.ctime()}, Columns needed:')
         for item in lst_param:
             print(item['name'])
         # stop code execution
         sys.exit()
-    print(f'{time.ctime()}, End dataframe format check')
+    print(f'{time.ctime()}, End data frame format check')
         
 def insert_df_in_sap_rfc(df, dict_sap_con, func_name, rfc_table):
-    '''Ingest data that is in a dataframe in SAP using a defined RFC
+    '''Ingest data that is in a data frame in SAP using a defined RFC
     
     Parameters
     ----------
     df : pandas.DataFrame
-        dataframe that is going to be used to insert data to SAP
-    dict_sap_con : list
-        list of dictionaries with field names and data types used in RFC
-    func_name : list
-        list of dictionaries with field names and data types used in RFC
-    rfc_table : list
-        list of dictionaries with field names and data types used in RFC
+        data frame that is going to be used to insert data to SAP
+    dict_sap_con : dict
+        dictionary with SAP logon credentials (user, passwd, ashost, sysnr, client)
+    func_name : string
+        name of the function that you want to remotelly call
+    rfc_table : string
+        name of the table which your RFC populates
         
     Returns
     -------
@@ -155,7 +155,7 @@ def insert_df_in_sap_rfc(df, dict_sap_con, func_name, rfc_table):
     print(f'{time.ctime()}, Start data ingestion to SAP process')
     # create an empty list that is going to recive the result
     lst_res = []
-    # get the quantity of rows of the dataframe
+    # get the quantity of rows of the data frame
     rows_qty = len(df)
     # define the number of execution, getting the entire part of the division and 
     # adding 1 to it, to execute the last rows that don't achieve the quantity of 
@@ -170,10 +170,10 @@ def insert_df_in_sap_rfc(df, dict_sap_con, func_name, rfc_table):
             # define the first and last row for this execution
             f_r = i*c.rows_per_exec
             l_r = min((i+1)*c.rows_per_exec, rows_qty)
-            # define an auxiliar dataframe with only the rows of this iteration
+            # define an auxiliar data frame with only the rows of this iteration
             df_aux = df.iloc[f_r:l_r]
             print(f'{time.ctime()}, Rows defined')
-            # convert this dataframe to a json format, oriented by records
+            # convert this data frame to a json format, oriented by records
             # this is the needed format to do a multirow input with a RFC
             # by last all the json data must be inside of a list
             lst_dicts_rows = eval(df_aux.to_json(orient='records'))
@@ -200,18 +200,18 @@ def insert_df_in_sap_rfc(df, dict_sap_con, func_name, rfc_table):
     return lst_res
         
 def df_to_sap_rfc(df, dict_sap_con, func_name, rfc_table):
-    '''ingest data that is in a dataframe in SAP using a defined RFC, checking if the dataframe has the same size, column names and data types
+    '''ingest the data that is inside of a data frame in SAP using a defined RFC, checking if the dataframe has the same size, column names and data types
     
     Parameters
     ----------
     df : pandas.DataFrame
-        dataframe that is going to be used to insert data to SAP
-    dict_sap_con : list
-        list of dictionaries with field names and data types used in RFC
-    func_name : list
-        list of dictionaries with field names and data types used in RFC
-    rfc_table : list
-        list of dictionaries with field names and data types used in RFC
+        data frame that is going to be used to insert data to SAP
+    dict_sap_con : dict
+        dictionary with SAP logon credentials (user, passwd, ashost, sysnr, client)
+    func_name : string
+        name of the function that you want to remotelly call
+    rfc_table : string
+        name of the table which your RFC populates
         
     Returns
     -------
@@ -219,7 +219,7 @@ def df_to_sap_rfc(df, dict_sap_con, func_name, rfc_table):
     '''
     # get needed parameters from RFC
     lst_param = get_rfc_parameters(dict_sap_con, func_name)
-    # check dataframe input
+    # check data frame input
     check_input_format(df, lst_param)
     # insert data
     lst_res = insert_df_in_sap_rfc(df, dict_sap_con, func_name, rfc_table)
